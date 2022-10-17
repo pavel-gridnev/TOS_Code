@@ -1,0 +1,28 @@
+input period = aggregationPeriod.hour;
+input avgType = averageType.expONENTIAL;
+
+plot avg8_15 = movingAverage(avgtype, close(period = aggregationperiod.fiFTEEN_MIN), 8);
+avg8_15.setdefaultColor(color.yellow);
+avg8_15.setLineWeight(2);
+
+plot avg21_30 = movingAverage(avgtype, close(period = aggregationperiod.thiRTY_MIN), 21);
+avg21_30.setdefaultColor(color.white);
+avg21_30.setLineWeight(2);
+
+plot avg50_60 = movingAverage(avgtype, close(period = aggregationperiod.hour), 60);
+avg50_60.setdefaultColor(color.cyan);
+avg50_60.setLineWeight(2);
+
+plot avg5_d = movingAverage(avgtype, close(period = aggregationperiod.DAY), 5);
+avg5_d.setdefaultColor(color.magenTA);
+avg5_d.setLineWeight(2);
+
+plot keil3_60_u = KeltnerChannels(0, 3, 20, close(period=aggregationperiod.hour), avgType, avgType).upper_band;
+keil3_60_u.setDefaultColor(color.light_RED);
+keil3_60_u.setLineWeight(3);
+#plot keil3_60 = KeltnerChannels(0, 3, 20, close(period=aggregationperiod.hour), averagetype.simple, #averagetype.simple).avg;
+#keil3_60.setDefaultColor(color.light_RED);
+#keil3_60.setLineWeight(3);
+plot keil3_60_l = KeltnerChannels(0, 3, 20, close(period=aggregationperiod.hour), avgType, avgType).lower_band;
+keil3_60_l.setDefaultColor(color.light_RED);
+keil3_60_l.setLineWeight(3);

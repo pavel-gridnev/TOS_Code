@@ -1,0 +1,68 @@
+declare upper;
+
+script squizee_hist {
+    input agg = AggregationPeriod.DAY;
+    input length = 20;
+    input smooth_factor = 0.01;
+    input min_hist_value = 10;
+    input smooth_ma = 5;
+    def source = close(period = agg);
+
+    def mom_i = Inertia(source - ((Highest(high(period = agg), length) + Lowest(low(period = agg), length)) / 2 + ExpAverage(source, length)) / 2, length);
+    def mom = movingAverage(AverageType.Simple, mom_i, smooth_ma);
+    def nz = if IsNaN(mom[1]) then 0 else mom[1];
+    # 1 - cyan, 2 - blue, 3 -red, 4 - yellow
+    plot col = if absValue(mom) < min_hist_value then double.nan else if mom > 0 then if mom > nz * (1 + smooth_factor) then 1 else 2 else if mom < nz *(1 - smooth_factor) then 3 else 4;
+    # dots
+    def dots = if (col[1] == 1 and col == 2) or (col[1] == 4 and col == 3) then -1 else if (col[1] == 3 and col == 4) or (col[1] == 2 and col == 1) then 1 else dots[1];
+    #cross
+    def cross = if mom > 0 and mom[1] < 0 then cross[1] + 1 else if mom < 0 and mom[1] > 0 then cross[1] -1 else cross[1];
+
+}
+
+input smooth_pct = 0.02;
+input length = 20;
+input hist_limit = 10;
+input smooth_ma = 5;
+input tf_1 = AggregationPeriod.MIN;
+input tf_2 = AggregationPeriod.five_MIN;
+input tf_3 = AggregationPeriod.FOUR_MIN;
+input tf_4 = AggregationPeriod.THREE_MIN;
+input tf_5 = AggregationPeriod.TWO_MIN;
+input tf_6 = AggregationPeriod.MIN;
+
+def margin = (highest(high) - lowest(low))/10;
+
+def dots_1 = squizee_hist(tf_1, 20, smooth_pct, hist_limit, smooth_ma).dots;
+def dots_2 = squizee_hist(tf_2, 20, smooth_pct, hist_limit, smooth_ma).dots;
+def dots_3 = squizee_hist(tf_3, 20, smooth_pct, hist_limit, smooth_ma).dots;
+def dots_4 = squizee_hist(tf_4, 20, smooth_pct, hist_limit, smooth_ma).dots;
+def dots_5 = squizee_hist(tf_5, 20, smooth_pct, hist_limit, smooth_ma).dots;
+def dots_6 = squizee_hist(tf_6, 20, smooth_pct, hist_limit, smooth_ma).dots;
+
+def dots = dots_1 + dots_2 + dots_3 + dots_4 + dots_5 + dots_6;
+
+# paint dots
+plot dots_up = if dots[1] < dots then low - margin  else double.nan;
+plot dots_down = if dots[1] > dots then high + margin else double.nan;
+dots_up.setPaintingStrategy(paintingStrategy.squARES);
+dots_up.assignValueColor(if dots <= 2 then color.lighT_GREEN else color.dark_GREEN);
+dots_down.setPaintingStrategy(paintingStrategy.squARES);
+dots_down.assignValueColor(if dots >= -2 then color.lighT_red else color.dark_red);
+
+def cross_1 = squizee_hist(tf_1, 20, smooth_pct, hist_limit, smooth_ma).cross;
+def cross_2 = squizee_hist(tf_2, 20, smooth_pct, hist_limit, smooth_ma).cross;
+def cross_3 = squizee_hist(tf_3, 20, smooth_pct, hist_limit, smooth_ma).cross;
+def cross_4 = squizee_hist(tf_4, 20, smooth_pct, hist_limit, smooth_ma).cross;
+def cross_5 = squizee_hist(tf_5, 20, smooth_pct, hist_limit, smooth_ma).cross;
+def cross_6 = squizee_hist(tf_6, 20, smooth_pct, hist_limit, smooth_ma).cross;
+
+def signal = cross_1 + cross_2 + cross_3 + cross_4 + cross_5 + cross_6;
+plot signal_up = if signal[1]<signal then low - 3*margin else double.Nan;
+signal_up.setPaintingStrategy(paintingStrategy.ARROW_UP);
+signal_up.AssignNormGradientColor(100, color.LIME, color.cyan);
+plot signal_down = if signal[1]>signal then high + 3*margin else double.Nan;
+signal_down.setPaintingStrategy(paintingStrategy.ARROW_DOWN);
+signal_down.AssignNormGradientColor(100, color.dark_ORANGE, color.light_ORANGE);
+
+plot z = close;

@@ -1,0 +1,58 @@
+declare lower;
+
+script squizee_hist {
+    input agg = AggregationPeriod.DAY;
+    input length = 20;
+    input smooth_factor = 0.02;
+    input min_hist_value = 10;
+    input smooth_ma = 5;
+
+    def source = close(period = agg);
+
+    def mom_i = Inertia(source - ((Highest(high(period = agg), length) + Lowest(low(period = agg), length)) / 2 + ExpAverage(source, length)) / 2, length);
+    def mom = movingAverage(AverageType.Simple, mom_i, smooth_ma);
+    def nz = if IsNaN(mom[1]) then 0 else mom[1];
+    plot hist = mom;
+    plot hist_color_scheme = if absValue(mom) < min_hist_value then double.nan else if mom > 0 then if mom > nz * (1 + smooth_factor) then 1 else 2 else if mom < nz *(1 - smooth_factor) then 3 else 4;
+}
+
+input smooth_pct = 0.01;
+input length = 20;
+input hist_limit = 10;
+input smooth_ma = 5;
+input tf_1 = AggregationPeriod.ten_MIN;
+input tf_2 = AggregationPeriod.five_MIN;
+input tf_3 = AggregationPeriod.FOUR_MIN;
+input tf_4 = AggregationPeriod.THREE_MIN;
+input tf_5 = AggregationPeriod.TWO_MIN;
+input tf_6 = AggregationPeriod.MIN;
+
+
+plot hist_1 = squizee_hist(tf_1, length, smooth_pct, hist_limit, smooth_ma).hist;
+def color_1 = squizee_hist(tf_1, length, smooth_pct, hist_limit, smooth_ma).hist_color_scheme;
+hist_1.assignValueColor(if color_1 <= 2 then if color_1 == 2 then color.blue else color.cyan else if color_1 == 3 then color.red else color.yellow);
+
+plot hist_2 = squizee_hist(tf_2, length, smooth_pct, hist_limit, smooth_ma).hist;
+def color_2 = squizee_hist(tf_2, length, smooth_pct, hist_limit, smooth_ma).hist_color_scheme;
+hist_2.assignValueColor(if color_2 <= 2 then if color_2 == 2 then color.blue else color.cyan else if color_2 == 3 then color.red else color.yellow);
+
+
+plot hist_3 = squizee_hist(tf_3, length, smooth_pct, hist_limit, smooth_ma).hist;
+def color_3 = squizee_hist(tf_3, length, smooth_pct, hist_limit, smooth_ma).hist_color_scheme;
+hist_3.assignValueColor(if color_3 <= 2 then if color_3 == 2 then color.blue else color.cyan else if color_3 == 3 then color.red else color.yellow);
+
+
+plot hist_4 = squizee_hist(tf_4, length, smooth_pct, hist_limit, smooth_ma).hist;
+def color_4 = squizee_hist(tf_4, length, smooth_pct, hist_limit, smooth_ma).hist_color_scheme;
+hist_4.assignValueColor(if color_4 <= 2 then if color_4 == 2 then color.blue else color.cyan else if color_4 == 3 then color.red else color.yellow);
+
+plot hist_5 = squizee_hist(tf_5, length, smooth_pct, hist_limit, smooth_ma).hist;
+def color_5 = squizee_hist(tf_5, length, smooth_pct, hist_limit, smooth_ma).hist_color_scheme;
+hist_5.assignValueColor(if color_5 <= 2 then if color_5 == 2 then color.blue else color.cyan else if color_5 == 3 then color.red else color.yellow);
+
+plot hist_6 = squizee_hist(tf_6, length, smooth_pct, hist_limit, smooth_ma).hist;
+def color_6 = squizee_hist(tf_6, length, smooth_pct, hist_limit, smooth_ma).hist_color_scheme;
+hist_6.assignValueColor(if color_6 <= 2 then if color_6 == 2 then color.blue else color.cyan else if color_6 == 3 then color.red else color.yellow);
+
+plot z = 0;
+z.setdefaultColor(color.gray);
